@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&display=swap">
+    <style>
+        body {
+            font-family: 'Pirata One', cursive;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .menu, .rules, .credits, .game-over, .pause, .user-input, .language-selection {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .game-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .menu img {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+        }
+        h1, h2 {
+            font-family: 'Pirata One', cursive;
+            margin: 0.5em 0;
+            color: #d32f2f;
+        }
+        h1 {
+            font-size: 4em;
+        }
+        h2 {
+            font-size: 2em;
+        }
+        button {
+            font-family: 'Pirata One', cursive;
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin: 10px;
+            border: 2px solid #3a3a3a;
+            background-color: #d32f2f;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        button:hover {
+            background-color: #fff;
+            color: #d32f2f;
+        }
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 60vw; /* Adjust height proportionally */
+            background-color: #aaffaa;
+            border: 10px solid #3a3a3a;
+        }
+        .math-container {
+            width: 100%;
+            max-width: 300px;
+            padding: 20px;
+            background-color: #fff;
+            border: 10px solid #3a3a3a;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-color: #bfff00;
+        }
+        .hidden {
+            display: none;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .stats div {
+            font-size: 1.2em;
+        }
+        .apple-icon, .trophy-icon, .heart-icon {
+            margin-right: 5px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+        }
+        .touch-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        .touch-controls button {
+            width: 50px;
+            height: 50px;
+            font-size: 1em;
+        }
+        .error-message {
+            color: red;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+        .countdown-timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: red;
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .pause-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="menu">
+            <img src="juego snake logo.png" alt="Game Image">
+            <h1 id="title">SNAKE GAME</h1>
+            <button id="playButton">JUGAR</button>
+            <button id="rulesButton">REGLAS</button>
+            <button id="creditsButton">CRÉDITOS</button>
+            <button id="languageButton">IDIOMAS</button>
+        </div>
+        <div class="rules hidden">
+            <h2 id="rulesTitle">REGLAS</h2>
+            <p id="rule1">Usa las teclas de flecha para mover la serpiente.</p>
+            <p id="rule2">Come las manzanas para crecer y ganar puntos.</p>
+            <p id="rule3">Evite golpear las paredes y a usted mismo.</p>
+            <button id="backToMenuFromRules">VOLVER AL MENÚ</button>
+        </div>
+        <div class="credits hidden">
+            <h2 id="creditsTitle">CRÉDITOS</h2>
+            <p id="creditsText">Desarrollada por Enrique Ochoa</p>
+            <img src="yo.png" alt="Enrique Ochoa" width="150">
+            <button id="backToMenuFromCredits">VOLVER AL MENÚ</button>
+        </div>
+        <div class="language-selection hidden">
+            <h2 id="languageTitle">IDIOMAS</h2>
+            <button id="spanishButton">🇪🇸 Español</button>
+            <button id="frenchButton">🇫🇷 Francés</button>
+            <button id="portugueseButton">🇵🇹 Portugués</button>
+            <button id="backToMenuFromLanguages">VOLVER AL MENÚ</button>
+        </div>
+        <div class="pause hidden">
+            <h2 id="pauseTitle">PAUSA</h2>
+            <button id="resumeButton">CONTINUAR</button>
+            <button id="exitToMenuButton">SALIR AL MENÚ</button>
+        </div>
+        <div class="user-input hidden">
+            <h2 id="usernameTitle">Ingrese el nombre de usuario</h2>
+            <input type="text" id="usernameInput" placeholder="Username">
+            <div class="button-container">
+                <button id="continueButton">CONTINUAR</button>
+                <button id="exitToMenuFromUserInputButton">SALIR AL MENÚ</button>
+            </div>
+            <p id="existingUserPrompt" class="hidden">¡Bienvenido de nuevo, <span id="existingUsername"></span>! <button id="continueWithSameUserButton">Continuar</button></p>
+            <p id="usernameError" class="error-message hidden">Por favor, escribe un nombre de usuario para continuar.</p>
+        </div>
+        <div class="game-wrapper hidden" id="gameWrapper">
+            <div class="game-container" id="gameContainer">
+                <button class="pause-button" id="pauseButton">⏸️</button>
+                <canvas id="gameCanvas" width="300" height="300"></canvas>
+                <div class="countdown-timer hidden" id="countdownTimer">3</div>
+                <div class="stats">
+                    <div><span class="apple-icon">🍎</span> <span id="applesEaten">0</span></div>
+                    <div><span class="trophy-icon">🏆</span> <span id="record">0</span></div>
+                    <div><span class="heart-icon">❤️</span> <span id="livesLeft">3</span></div>
+                </div>
+            </div>
+            <div class="math-container hidden" id="mathContainer">
+                <h2 id="mathTitle">Desafío Matemático</h2>
+                <p id="mathProblem">Resuelve esto: </p>
+                <input type="text" id="mathAnswer" placeholder="Tu respuesta">
+                <button id="submitAnswerButton">Enviar</button>
+                <p id="hint" class="hidden">Pista: </p>
+                <button id="hintButton">Mostrar Pista</button>
+                <p id="notification" class="hidden"></p>
+                <p id="mathError" class="error-message hidden">Por favor, escribe una respuesta para continuar.</p>
+            </div>
+            <div class="touch-controls" id="touchControls">
+                <button id="upButton">⬆️</button>
+                <div>
+                    <button id="leftButton">⬅️</button>
+                    <button id="downButton">⬇️</button>
+                    <button id="rightButton">➡️</button>
+                </div>
+            </div>
+        </div>
+        <div class="game-over hidden">
+            <h2 id="gameOverTitle">Fin del Juego</h2>
+            <p id="finalScoreText">Su puntuación: <span id="finalScore">0</span></p>
+            <button id="backToMenuFromGameOver">VOLVER AL MENÚ</button>
+        </div>
+    </div>
+    
+    <audio id="menuMusic" src="menu_music.mp3" loop></audio>
+    <audio id="clickSound" src="click.mp3"></audio>
+    <audio id="moveSound" src="move.mp3"></audio>
+    <audio id="gameMusic" src="game_music.mp3" loop></audio>
+    <audio id="winSound" src="win.mp3"></audio>
+    <audio id="loseSound" src="lose.mp3"></audio>
+    <audio id="eatAppleSound" src="eat_apple.mp3"></audio>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const playButton = document.getElementById('playButton');
+        const rulesButton = document.getElementById('rulesButton');
+        const creditsButton = document.getElementById('creditsButton');
+        const languageButton = document.getElementById('languageButton');
+        const gameWrapper = document.getElementById('gameWrapper');
+        const gameContainer = document.getElementById('gameContainer');
+        const mathContainer = document.getElementById('mathContainer');
+        const menu = document.querySelector('.menu');
+        const rules = document.querySelector('.rules');
+        const credits = document.querySelector('.credits');
+        const languageSelection = document.querySelector('.language-selection');
+        const gameOver = document.querySelector('.game-over');
+        const pause = document.querySelector('.pause');
+        const backToMenuFromRules = document.getElementById('backToMenuFromRules');
+        const backToMenuFromCredits = document.getElementById('backToMenuFromCredits');
+        const backToMenuFromLanguages = document.getElementById('backToMenuFromLanguages');
+        const backToMenuFromGameOver = document.getElementById('backToMenuFromGameOver');
+        const resumeButton = document.getElementById('resumeButton');
+        const exitToMenuButton = document.getElementById('exitToMenuButton');
+        const exitToMenuFromUserInputButton = document.getElementById('exitToMenuFromUserInputButton');
+        const submitAnswerButton = document.getElementById('submitAnswerButton');
+        const hintButton = document.getElementById('hintButton');
+        const applesEatenDisplay = document.getElementById('applesEaten');
+        const recordDisplay = document.getElementById('record');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const mathProblem = document.getElementById('mathProblem');
+        const mathAnswer = document.getElementById('mathAnswer');
+        const hint = document.getElementById('hint');
+        const notification = document.getElementById('notification');
+        const usernameInput = document.getElementById('usernameInput');
+        const continueButton = document.getElementById('continueButton');
+        const existingUserPrompt = document.getElementById('existingUserPrompt');
+        const existingUsername = document.getElementById('existingUsername');
+        const continueWithSameUserButton = document.getElementById('continueWithSameUserButton');
+        const userInputContainer = document.querySelector('.user-input');
+        const spanishButton = document.getElementById('spanishButton');
+        const frenchButton = document.getElementById('frenchButton');
+        const portugueseButton = document.getElementById('portugueseButton');
+        const menuMusic = document.getElementById('menuMusic');
+        const clickSound = document.getElementById('clickSound');
+        const moveSound = document.getElementById('moveSound');
+        const gameMusic = document.getElementById('gameMusic');
+        const winSound = document.getElementById('winSound');
+        const loseSound = document.getElementById('loseSound');
+        const eatAppleSound = document.getElementById('eatAppleSound');
+        const touchControls = document.getElementById('touchControls');
+        const upButton = document.getElementById('upButton');
+        const leftButton = document.getElementById('leftButton');
+        const downButton = document.getElementById('downButton');
+        const rightButton = document.getElementById('rightButton');
+        const usernameError = document.getElementById('usernameError');
+        const mathError = document.getElementById('mathError');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const pauseButton = document.getElementById('pauseButton');
+
+        let snake = [{x: 300, y: 300}];
+        let direction = {x: 0, y: 0}; // La serpiente se queda quieta inicialmente
+        let apple = {x: 100, y: 100};
+        let score = 0;
+        let record = 0;
+        let lives = 3; // Initialize lives
+        let gameInterval;
+        let changingDirection = false;
+        let gamePaused = false;
+        let currentAnswer = 0;
+        let inGame = false; // Variable to check if the game is active
+        let currentUser = '';
+        let currentLanguage = 'es'; // Default language
+        let cooldown = false; // Variable to check if cooldown is active
+
+        const translations = {
+            es: {
+                title: 'SNAKE GAME',
+                play: 'JUGAR',
+                rules: 'REGLAS',
+                credits: 'CRÉDITOS',
+                languages: 'IDIOMAS',
+                pause: 'PAUSA',
+                resume: 'CONTINUAR',
+                exit: 'SALIR AL MENÚ',
+                enterUsername: 'Ingrese el nombre de usuario',
+                mathChallenge: 'Desafío Matemático',
+                submit: 'Enviar',
+                hint: 'Pista',
+                gameOver: 'Fin del Juego',
+                score: 'Su puntuación:',
+                backToMenu: 'VOLVER AL MENÚ',
+                rule1: 'Usa las teclas de flecha para mover la serpiente.',
+                rule2: 'Come las manzanas para crecer y ganar puntos.',
+                rule3: 'Evite golpear las paredes y a usted mismo.',
+                correctAnswer: '¡Respuesta correcta!',
+                incorrectAnswer: 'Respuesta incorrecta. Inténtalo de nuevo.',
+                hintMessage: 'Pista: ',
+                solveThis: 'Resuelve esto: ',
+                usernameError: 'Por favor, escribe un nombre de usuario para continuar.',
+                mathError: 'Por favor, escribe una respuesta para continuar.'
+            },
+            fr: {
+                title: 'JEU DE SERPENT',
+                play: 'JOUER',
+                rules: 'RÈGLES',
+                credits: 'CRÉDITS',
+                languages: 'LANGUES',
+                pause: 'PAUSE',
+                resume: 'CONTINUER',
+                exit: 'QUITTER AU MENU',
+                enterUsername: "Entrez le nom d'utilisateur",
+                mathChallenge: 'Défi Mathématique',
+                submit: 'Soumettre',
+                hint: 'Indice',
+                gameOver: 'Jeu Terminé',
+                score: 'Votre score:',
+                backToMenu: 'RETOURNER AU MENU',
+                rule1: 'Utilisez les touches fléchées pour déplacer le serpent.',
+                rule2: 'Mangez les pommes pour grandir et gagner des points.',
+                rule3: 'Évitez de heurter les murs et vous-même.',
+                correctAnswer: 'Bonne réponse!',
+                incorrectAnswer: 'Réponse incorrecte. Essayez encore.',
+                hintMessage: 'Indice: ',
+                solveThis: 'Résoudre ceci: ',
+                usernameError: "Veuillez entrer un nom d'utilisateur pour continuer.",
+                mathError: 'Veuillez entrer une réponse pour continuer.'
+            },
+            pt: {
+                title: 'JOGO DA COBRA',
+                play: 'JOGAR',
+                rules: 'REGRAS',
+                credits: 'CRÉDITOS',
+                languages: 'IDIOMAS',
+                pause: 'PAUSA',
+                resume: 'CONTINUAR',
+                exit: 'SAIR PARA O MENU',
+                enterUsername: 'Insira o nome de usuário',
+                mathChallenge: 'Desafio Matemático',
+                submit: 'Enviar',
+                hint: 'Dica',
+                gameOver: 'Fim de Jogo',
+                score: 'Sua pontuação:',
+                backToMenu: 'VOLTAR AO MENU',
+                rule1: 'Use as setas para mover a cobra.',
+                rule2: 'Coma as maçãs para crescer e ganhar pontos.',
+                rule3: 'Evite bater nas paredes e em si mesmo.',
+                correctAnswer: 'Resposta correta!',
+                incorrectAnswer: 'Resposta incorreta. Tente novamente.',
+                hintMessage: 'Dica: ',
+                solveThis: 'Resolva isso: ',
+                usernameError: 'Por favor, escreva um nome de usuário para continuar.',
+                mathError: 'Por favor, escreva uma resposta para continuar.'
+            }
+        };
+
+        function stopAllSounds() {
+            menuMusic.pause();
+            menuMusic.currentTime = 0;
+            gameMusic.pause();
+            gameMusic.currentTime = 0;
+            winSound.pause();
+            winSound.currentTime = 0;
+            loseSound.pause();
+            loseSound.currentTime = 0;
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            const translation = translations[lang];
+            document.getElementById('title').textContent = translation.title;
+            playButton.textContent = translation.play;
+            rulesButton.textContent = translation.rules;
+            creditsButton.textContent = translation.credits;
+            languageButton.textContent = translation.languages;
+            document.getElementById('rulesTitle').textContent = translation.rules;
+            document.getElementById('rule1').textContent = translation.rule1;
+            document.getElementById('rule2').textContent = translation.rule2;
+            document.getElementById('rule3').textContent = translation.rule3;
+            document.getElementById('backToMenuFromRules').textContent = translation.backToMenu;
+            document.getElementById('creditsTitle').textContent = translation.credits;
+            document.getElementById('creditsText').textContent = 'Desarrollada por Enrique Ochoa';
+            document.getElementById('backToMenuFromCredits').textContent = translation.backToMenu;
+            document.getElementById('languageTitle').textContent = translation.languages;
+            document.getElementById('backToMenuFromLanguages').textContent = translation.backToMenu;
+            document.getElementById('pauseTitle').textContent = translation.pause;
+            resumeButton.textContent = translation.resume;
+            exitToMenuButton.textContent = translation.exit;
+            document.getElementById('usernameTitle').textContent = translation.enterUsername;
+            continueButton.textContent = translation.resume;
+            existingUserPrompt.innerHTML = `¡Bienvenido de nuevo, <span id="existingUsername"></span>! <button id="continueWithSameUserButton">${translation.resume}</button>`;
+            document.getElementById('mathTitle').textContent = translation.mathChallenge;
+            document.getElementById('submitAnswerButton').textContent = translation.submit;
+            hintButton.textContent = translation.hint;
+            document.getElementById('gameOverTitle').textContent = translation.gameOver;
+            document.getElementById('finalScoreText').textContent = translation.score;
+            document.getElementById('backToMenuFromGameOver').textContent = translation.backToMenu;
+            document.getElementById('mathAnswer').placeholder = translation.solveThis;
+            usernameError.textContent = translation.usernameError;
+            mathError.textContent = translation.mathError;
+
+            // Reattach the event listener for the dynamically generated button
+            document.getElementById('continueWithSameUserButton').addEventListener('click', startGame);
+        }
+
+        function startGame() {
+            stopAllSounds();
+            inGame = true; // Set the game as active
+            userInputContainer.classList.add('hidden');
+            existingUserPrompt.classList.add('hidden');
+            gameWrapper.classList.remove('hidden');
+            mathContainer.classList.add('hidden'); // Esconder el contenedor de matemáticas
+            clearInterval(gameInterval);
+            snake = [{x: 300, y: 300}];
+            direction = {x: 0, y: 0}; // La serpiente se queda quieta inicialmente
+            apple = getRandomApplePosition();
+            score = 0;
+            lives = 3; // Reset lives
+            changingDirection = false;
+            applesEatenDisplay.textContent = score;
+            recordDisplay.textContent = record;
+            document.getElementById('livesLeft').textContent = lives;
+            gamePaused = false;
+            drawGame(); // Ensure the game canvas is drawn
+            gameInterval = setInterval(updateGame, 300); // Velocidad reducida de la serpiente
+            gameMusic.play();
+        }
+
+        function updateGame() {
+            if (gamePaused || cooldown) return;
+            moveSnake();
+            if (checkCollision()) {
+                endGame(false);
+                return;
+            }
+            if (snake[0].x === apple.x && snake[0].y === apple.y) {
+                gamePaused = true;
+                generateMathProblem();
+                mathContainer.classList.remove('hidden');
+                eatAppleSound.play();
+                return;
+            }
+            drawGame();
+        }
+
+        function moveSnake() {
+            const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
+            snake.unshift(head);
+            snake.pop();
+            changingDirection = false;
+            moveSound.play();
+        }
+
+        function checkCollision() {
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) {
+                    return true;
+                }
+            }
+            const hitLeftWall = snake[0].x < 0;
+            const hitRightWall = snake[0].x >= canvas.width;
+            const hitTopWall = snake[0].y < 0;
+            const hitBottomWall = snake[0].y >= canvas.height;
+            return hitLeftWall || hitRightWall || hitTopWall || hitBottomWall;
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '18px Arial'; // Ajuste del tamaño del emoji
+            ctx.fillText('🍎', apple.x, apple.y + 25); // Ajuste de la posición Y para centrar mejor el emoji
+            ctx.fillStyle = 'green';
+            snake.forEach((segment, index) => {
+                ctx.fillRect(segment.x, segment.y, 20, 20);
+                ctx.strokeRect(segment.x, segment.y, 20, 20);
+            });
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+        function getRandomApplePosition() {
+            const gridSize = 20;
+            const gridWidth = (canvas.width - 20) / gridSize;
+            const gridHeight = (canvas.height - 20) / gridSize;
+            let newApple;
+            do {
+                newApple = {
+                    x: getRandomInt(0, gridWidth) * gridSize,
+                    y: getRandomInt(0, gridHeight) * gridSize
+                };
+            } while (snake.some(segment => segment.x === newApple.x && segment.y === newApple.y));
+            return newApple;
+        }
+
+        function endGame(isWin) {
+            stopAllSounds();
+            clearInterval(gameInterval);
+            gameWrapper.classList.add('hidden');
+            gameOver.classList.remove('hidden');
+            finalScoreDisplay.textContent = score;
+            inGame = false; // Set the game as inactive
+            if (isWin) {
+                winSound.play();
+                document.getElementById('gameOverTitle').textContent = '¡Ganaste!';
+            } else {
+                loseSound.play();
+                document.getElementById('gameOverTitle').textContent = translations[currentLanguage].gameOver;
+            }
+        }
+
+        function pauseGame() {
+            gamePaused = true;
+            pause.classList.remove('hidden');
+            gameContainer.classList.add('hidden');
+            gameMusic.pause();
+        }
+
+        function resumeGame() {
+            gamePaused = false;
+            pause.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            gameMusic.play();
+            gameInterval = setInterval(updateGame, 300); // Velocidad reducida de la serpiente
+        }
+
+        function handleKeydown(e) {
+            if (changingDirection || cooldown) return; // Do not change direction if cooldown is active
+            changingDirection = true;
+            const keyPressed = e.keyCode;
+            const goingUp = direction.y === -20;
+            const goingDown = direction.y === 20;
+            const goingRight = direction.x === 20;
+            const goingLeft = direction.x === -20;
+
+            if (inGame) { // Only process keys when the game is active
+                switch (keyPressed) {
+                    case 37: // 'left arrow'
+                        if (!goingRight) {
+                            direction = {x: -20, y: 0};
+                            moveSound.play();
+                        }
+                        break;
+                    case 38: // 'up arrow'
+                        if (!goingDown) {
+                            direction = {x: 0, y: -20};
+                            moveSound.play();
+                        }
+                        break;
+                    case 39: // 'right arrow'
+                        if (!goingLeft) {
+                            direction = {x: 20, y: 0};
+                            moveSound.play();
+                        }
+                        break;
+                    case 40: // 'down arrow'
+                        if (!goingUp) {
+                            direction = {x: 0, y: 20};
+                            moveSound.play();
+                        }
+                        break;
+                    case 27: // 'Escape' key
+                        if (inGame && !gamePaused) {
+                            pauseGame();
+                        }
+                        break;
+                }
+            }
+        }
+
+        function handleTouchStart(e) {
+            if (changingDirection || cooldown) return; // Do not change direction if cooldown is active
+            changingDirection = true;
+
+            const goingUp = direction.y === -20;
+            const goingDown = direction.y === 20;
+            const goingRight = direction.x === 20;
+            const goingLeft = direction.x === -20;
+
+            if (inGame) { // Only process keys when the game is active
+                const id = e.target.id;
+                switch (id) {
+                    case 'leftButton':
+                        if (!goingRight) {
+                            direction = {x: -20, y: 0};
+                            moveSound.play();
+                        }
+                        break;
+                    case 'upButton':
+                        if (!goingDown) {
+                            direction = {x: 0, y: -20};
+                            moveSound.play();
+                        }
+                        break;
+                    case 'rightButton':
+                        if (!goingLeft) {
+                            direction = {x: 20, y: 0};
+                            moveSound.play();
+                        }
+                        break;
+                    case 'downButton':
+                        if (!goingUp) {
+                            direction = {x: 0, y: 20};
+                            moveSound.play();
+                        }
+                        break;
+                }
+            }
+        }
+
+        function generateMathProblem() {
+            const num1 = (Math.random() * 10).toFixed(2);
+            const num2 = (Math.random() * 10).toFixed(2);
+            const isAddition = Math.random() > 0.5;
+            currentAnswer = isAddition ? parseFloat(num1) + parseFloat(num2) : parseFloat(num1) - parseFloat(num2);
+            hint.textContent = `${translations[currentLanguage].hintMessage}${(currentAnswer + (Math.random() * 0.2 - 0.1)).toFixed(2)}`; // Pista cerca de la respuesta
+            mathProblem.textContent = `${translations[currentLanguage].solveThis}${num1} ${isAddition ? '+' : '-'} ${num2} = ?`;
+            mathAnswer.value = '';
+            notification.classList.add('hidden');
+            hint.classList.add('hidden');
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseFloat(mathAnswer.value);
+            if (isNaN(userAnswer)) {
+                mathError.classList.remove('hidden');
+                return;
+            }
+            mathError.classList.add('hidden');
+            if (userAnswer === currentAnswer) {
+                notification.textContent = translations[currentLanguage].correctAnswer;
+                notification.classList.remove('hidden');
+                notification.style.color = 'green';
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                    mathContainer.classList.add('hidden');
+                    gamePaused = false;
+                    cooldown = true; // Set cooldown active
+                    startCountdown(3);
+                }, 1000);
+            } else {
+                notification.textContent = translations[currentLanguage].incorrectAnswer;
+                notification.classList.remove('hidden');
+                notification.style.color = 'red';
+                lives--; // Decrement lives when the answer is incorrect
+                document.getElementById('livesLeft').textContent = lives;
+                if (lives <= 0) {
+                    endGame(false); // If the player runs out of lives, they lose
+                }
+            }
+        }
+
+        function showHint() {
+            hint.classList.remove('hidden');
+        }
+
+        function startCountdown(seconds) {
+            let remainingSeconds = seconds;
+            countdownTimer.textContent = remainingSeconds;
+            countdownTimer.classList.remove('hidden');
+
+            const countdownInterval = setInterval(() => {
+                remainingSeconds--;
+                countdownTimer.textContent = remainingSeconds;
+                if (remainingSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownTimer.classList.add('hidden');
+                    cooldown = false; // Disable cooldown
+                    apple = getRandomApplePosition(); // Change the apple position
+                    score++; // Incrementar la puntuación cuando la respuesta es correcta
+                    applesEatenDisplay.textContent = score;
+                    if (score > record) {
+                        record = score;
+                        recordDisplay.textContent = record;
+                    }
+                    if (score >= 5) {
+                        endGame(true); // If the player has eaten 5 apples, they win
+                    } else {
+                        gameInterval = setInterval(updateGame, 300); // Velocidad reducida de la serpiente
+                    }
+                }
+            }, 1000);
+        }
+
+        function resetGame() {
+            stopAllSounds();
+            clearInterval(gameInterval);
+            snake = [{x: 300, y: 300}];
+            direction = {x: 0, y: 0};
+            apple = getRandomApplePosition();
+            score = 0;
+            lives = 3; // Reset lives
+            changingDirection = false;
+            applesEatenDisplay.textContent = score;
+            document.getElementById('livesLeft').textContent = lives;
+            gamePaused = false;
+            hint.classList.add('hidden');
+            notification.classList.add('hidden');
+            hintButton.disabled = false;
+            gameWrapper.classList.add('hidden');
+            inGame = false; // Set the game as inactive
+            menuMusic.play();
+        }
+
+        playButton.addEventListener('click', () => {
+            clickSound.play();
+            if (currentUser) {
+                existingUsername.textContent = currentUser;
+                existingUserPrompt.classList.remove('hidden');
+                userInputContainer.classList.remove('hidden');
+                menu.classList.add('hidden');
+            } else {
+                userInputContainer.classList.remove('hidden');
+                menu.classList.add('hidden');
+            }
+        });
+
+        continueButton.addEventListener('click', () => {
+            clickSound.play();
+            currentUser = usernameInput.value;
+            if (!currentUser) {
+                usernameError.classList.remove('hidden');
+                return;
+            }
+            usernameError.classList.add('hidden');
+            startGame();
+        });
+
+        exitToMenuFromUserInputButton.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            userInputContainer.classList.add('hidden');
+            menu.classList.remove('hidden');
+            menuMusic.play();
+        });
+
+        continueWithSameUserButton.addEventListener('click', startGame);
+
+        rulesButton.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            menu.classList.add('hidden');
+            rules.classList.remove('hidden');
+        });
+        creditsButton.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            menu.classList.add('hidden');
+            credits.classList.remove('hidden');
+        });
+        languageButton.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            menu.classList.add('hidden');
+            languageSelection.classList.remove('hidden');
+        });
+        backToMenuFromRules.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            rules.classList.add('hidden');
+            menu.classList.remove('hidden');
+            menuMusic.play();
+        });
+        backToMenuFromCredits.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            credits.classList.add('hidden');
+            menu.classList.remove('hidden');
+            menuMusic.play();
+        });
+        backToMenuFromLanguages.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            languageSelection.classList.add('hidden');
+            menu.classList.remove('hidden');
+            menuMusic.play();
+        });
+        backToMenuFromGameOver.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            gameOver.classList.add('hidden');
+            menu.classList.remove('hidden');
+            resetGame();
+        });
+        resumeButton.addEventListener('click', resumeGame);
+        exitToMenuButton.addEventListener('click', () => {
+            clickSound.play();
+            stopAllSounds();
+            pause.classList.add('hidden');
+            menu.classList.remove('hidden');
+            gameWrapper.classList.add('hidden');
+            mathContainer.classList.add('hidden');
+            resetGame();
+        });
+        submitAnswerButton.addEventListener('click', checkAnswer);
+        hintButton.addEventListener('click', showHint);
+        pauseButton.addEventListener('click', pauseGame);
+
+        spanishButton.addEventListener('click', () => setLanguage('es'));
+        frenchButton.addEventListener('click', () => setLanguage('fr'));
+        portugueseButton.addEventListener('click', () => setLanguage('pt'));
+
+        // Play menu music on page load
+        window.addEventListener('load', () => {
+            menuMusic.play();
+        });
+
+        // Add event listeners for touch controls
+        upButton.addEventListener('touchstart', handleTouchStart);
+        leftButton.addEventListener('touchstart', handleTouchStart);
+        downButton.addEventListener('touchstart', handleTouchStart);
+        rightButton.addEventListener('touchstart', handleTouchStart);
+
+        // Function to detect mobile devices
+        function isMobileDevice() {
+            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+        }
+
+        // Show touch controls if on mobile device
+        if (isMobileDevice()) {
+            touchControls.classList.remove('hidden');
+            window.removeEventListener('keydown', handleKeydown); // Remove keyboard event listener if mobile
+        } else {
+            window.addEventListener('keydown', handleKeydown); // Add keyboard event listener if not mobile
+        }
+    </script>
+</body>
+</html>
